@@ -1,3 +1,4 @@
+import 'dotenv'
 /** @type {import('next').NextConfig} */
 const nextConfig = {};
 
