@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import BackButton from "./components/back-button";
 
 export const metadata: Metadata = {
   title: "UniBus Administrador",
@@ -21,6 +22,7 @@ export default function HomeLayout({
           fill
           className="object-cover"
         />
+        <BackButton />
       </div>
       <div className="flex items-center justify-center col-span-3">
         {children}

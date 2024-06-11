@@ -16,30 +16,32 @@ import { Trash } from "lucide-react";
 import { toast } from "sonner";
 
 interface DialogDeleteProps {
-    id_servico: number
+  id_servico: number;
 }
 
-export const DialogDelete = ({id_servico}: DialogDeleteProps) => {
-  const { token } = useAuth()
-    const handleDelete = async () => {
-      console.log(id_servico)
-      try {
-        const response = await api.delete(`/servico-oferta/empresa/${id_servico}`, {
+export const DialogDelete = ({ id_servico }: DialogDeleteProps) => {
+  const { token } = useAuth();
+  const handleDelete = async () => {
+    try {
+      const response = await api.delete(
+        `/servico-oferta/empresa/${id_servico}`,
+        {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
-        })
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-        window.location.reload();  
-        return toast.success('Sucesso', {
-          description: `${response.data.message}`
-        })
-      } catch (error) {
-        return toast.error('Ocorreu um erro', {
-          description: `${error}`
-        })
-      }
+      window.location.reload();
+      return toast.success("Sucesso", {
+        description: `${response.data.message}`,
+      });
+    } catch (error) {
+      return toast.error("Ocorreu um erro", {
+        description: `${error}`,
+      });
     }
+  };
   return (
     <div>
       <Dialog>
@@ -49,10 +51,13 @@ export const DialogDelete = ({id_servico}: DialogDeleteProps) => {
         <DialogContent className="w-[1000px]">
           <DialogHeader>
             <DialogTitle>Excluir Serviço</DialogTitle>
-            <DialogDescription>
-              Deseja apagar o serviço?{" "} 
-              <span className="text-red-700">Atenção:{" "}</span>
-              Antes de apagar o serviço certifique-se de enncerar o contrato com os clientes do serviço
+            <DialogDescription className="flex flex-col items-center justify-start">
+              <div>Deseja apagar o serviço? </div>
+              <div>
+                <span className="text-red-700">Atenção: </span>
+                Antes de apagar o serviço certifique-se de enncerar o contrato
+                com os clientes do serviço
+              </div>
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-between mt-4">

@@ -6,6 +6,7 @@ import { Edit, Trash } from "lucide-react";
 import { z } from "zod";
 import { DialogDelete } from "./dialog_delete";
 import { DialogUpdate } from "./dialog_update";
+import { formatCurrency } from "@/utils/formatUtils";
 
 const paramsService = z.object({
   id_servico: z.coerce.number(),
@@ -43,10 +44,7 @@ export const CardService: React.FC<CardServiceProps> = ({ service }) => {
         <div className="bg-[#008B85] text-white text-center py-2 w-[324px] mx-4 rounded">
           Valor do serviço:{" "}
           <span>
-            {service.vl_servico?.toLocaleString("pt-BR", {
-              style: "currency",
-              currency: "BRL",
-            })}
+            {formatCurrency(service.vl_servico)}
           </span>
         </div>
       </div>
