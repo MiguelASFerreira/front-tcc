@@ -7,66 +7,100 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  // FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/context/AuthContext";
+import { api } from "@/data/api";
+import { formatCPF, formatPhoneNumber } from "@/utils/formatUtils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Link from "next/link";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
+import { useRouter } from 'next/navigation';
 
-const registerSchema = z
-  .object({
-    nome: z.string(),
-    cpf: z.number(),
-    nomeEmpresa: z.string(),
-    telefone: z.number(),
-    email: z.string().email({
-      message: "Email Inválido",
-    }),
-    password: z.string().min(5, {
-      message: "Senha acima de 5 caracteres",
-    }),
-    confirmedPassword: z.string().min(5, {
-      message: "Senha de confirmação acima de 5 caracteres",
-    }),
-  })
-  .refine((data) => data.password === data.confirmedPassword, {
-    message: "As senhas não são iguais",
-  });
+const registerSchema = z.object({
+  dono: z.string(),
+  cpf: z.string(),
+  nomeEmpresa: z.string(),
+  telefone: z.string(),
+  email: z.string().email({
+    message: "Email Inválido",
+  }),
+  password: z.string(),
+  // confirmedPassword: z.string(),
+});
+// .refine((data) => data.password === data.confirmedPassword, {
+//   path: ['confirmPassword'],
+//   message: "As senhas não são iguais",
+// });
 
 type RegisterSchema = z.infer<typeof registerSchema>;
 
 export default function RegisterHome() {
+  const { signIn } = useAuth();
+  const router = useRouter()
   const form = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      nome: "",
-      cpf: undefined,
+      dono: "",
+      cpf: "",
       nomeEmpresa: "",
-      telefone: undefined,
+      telefone: "",
       email: "",
       password: "",
-      confirmedPassword: "",
+      // confirmedPassword: "",
     },
   });
+  const handleRegister = async (data: RegisterSchema) => {
+    console.log(data);
+    try {
+      const telefoneLimpo = data.telefone
+        ? String(data.telefone).replace(/\D/g, "")
+        : null;
 
-  const handleLogin = (data: RegisterSchema) => {
-    return console.log(data);
+      const response = await api.post("/empresa", {
+        email: data.email,
+        password: data.password,
+        nome: data.nomeEmpresa,
+        dono: data.dono,
+        image_url: "string",
+        telefone1: Number(telefoneLimpo),
+        cpf: data.cpf,
+      });
+
+      if (response.status === 201) {
+        await signIn(data.email, data.password),
+          toast.success("Cadastro realizado com sucesso", {
+            description: "Você está sendo redicionado para o Dashboard",
+          })
+      } else {
+        toast.success("Cadastro realizado com sucesso", {
+          description: "Você está sendo redicionado para o a tela de login",
+        })
+        router.push('/dashboard')
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Erro ao realizar o cadastro", {
+        description: "Ocorreu um erro ao realizar o cadastro",
+      });
+    }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-1">
+    <div className="flex flex-col">
       <h1 className="font-bold text-[44px] text-welcomeColor">Cadastro</h1>
 
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(handleLogin)}
+          onSubmit={form.handleSubmit(handleRegister)}
           className="flex flex-col gap-2 w-[247.82px]"
         >
           <div className="space-y-2">
             <FormField
               control={form.control}
-              name="nome"
+              name="dono"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="font-bold text-loginColor">
@@ -74,9 +108,10 @@ export default function RegisterHome() {
                   </FormLabel>
                   <FormControl className="outline-none">
                     <Input
-                        placeholder="Nome" 
-                        {...field} 
-                        className="rounded-none border-0 border-b-2 border-loginColor"
+                      required
+                      placeholder="Nome"
+                      {...field}
+                      className="rounded-none border-0 border-b-2 border-loginColor"
                     />
                   </FormControl>
                 </FormItem>
@@ -85,13 +120,23 @@ export default function RegisterHome() {
             <FormField
               control={form.control}
               name="cpf"
-              render={({ field }) => (
+              render={({ field: { onChange, ...props } }) => (
                 <FormItem>
                   <FormLabel className="font-bold text-loginColor">
                     Digite seu cpf:
                   </FormLabel>
                   <FormControl className="outline-none">
-                    <Input className="rounded-none border-0 border-b-2 border-loginColor" placeholder="CPF" {...field} />
+                    <Input
+                      required
+                      onChange={(e) => {
+                        const { value } = e.target;
+                        e.target.value = formatCPF(value);
+                        onChange(e);
+                      }}
+                      className="rounded-none border-0 border-b-2 border-loginColor"
+                      placeholder="CPF"
+                      {...props}
+                    />
                   </FormControl>
                 </FormItem>
               )}
@@ -105,7 +150,12 @@ export default function RegisterHome() {
                     Digite o nome da empresa:
                   </FormLabel>
                   <FormControl className="outline-none">
-                    <Input className="rounded-none border-0 border-b-2 border-loginColor" placeholder="Empresa" {...field} />
+                    <Input
+                      required
+                      className="rounded-none border-0 border-b-2 border-loginColor"
+                      placeholder="Empresa"
+                      {...field}
+                    />
                   </FormControl>
                 </FormItem>
               )}
@@ -113,13 +163,23 @@ export default function RegisterHome() {
             <FormField
               control={form.control}
               name="telefone"
-              render={({ field }) => (
+              render={({ field: { onChange, ...props } }) => (
                 <FormItem>
                   <FormLabel className="font-bold text-loginColor">
                     Digite seu telefone ou da empresa:
                   </FormLabel>
                   <FormControl className="outline-none">
-                    <Input className="rounded-none border-0 border-b-2 border-loginColor" placeholder="Telefone" {...field} />
+                    <Input
+                      required
+                      onChange={(e) => {
+                        const { value } = e.target;
+                        e.target.value = formatPhoneNumber(value);
+                        onChange(e);
+                      }}
+                      className="rounded-none border-0 border-b-2 border-loginColor"
+                      placeholder="Telefone"
+                      {...props}
+                    />
                   </FormControl>
                 </FormItem>
               )}
@@ -133,7 +193,12 @@ export default function RegisterHome() {
                     Digite seu email:
                   </FormLabel>
                   <FormControl className="outline-none">
-                    <Input className="rounded-none border-0 border-b-2 border-loginColor" placeholder="Email" {...field} />
+                    <Input
+                      required
+                      className="rounded-none border-0 border-b-2 border-loginColor"
+                      placeholder="Email"
+                      {...field}
+                    />
                   </FormControl>
                 </FormItem>
               )}
@@ -147,12 +212,17 @@ export default function RegisterHome() {
                     Digite sua senha:
                   </FormLabel>
                   <FormControl className="outline-none">
-                    <Input className="rounded-none border-0 border-b-2 border-loginColor" placeholder="Senha" {...field} />
+                    <Input
+                      required
+                      className="rounded-none border-0 border-b-2 border-loginColor"
+                      placeholder="Senha"
+                      {...field}
+                    />
                   </FormControl>
                 </FormItem>
               )}
             />
-            <FormField
+            {/* <FormField
               control={form.control}
               name="confirmedPassword"
               render={({ field }) => (
@@ -161,11 +231,21 @@ export default function RegisterHome() {
                     Confirme sua senha:
                   </FormLabel>
                   <FormControl className="outline-none">
-                    <Input className="rounded-none border-0 border-b-2 border-loginColor" placeholder="Senha" {...field} />
+                    <Input
+                      required
+                      className="rounded-none border-0 border-b-2 border-loginColor"
+                      placeholder="Senha"
+                      {...field}
+                    />
                   </FormControl>
+                  {form.formState.errors.confirmPassword?.message && (
+                    <FormMessage>
+                      {form.formState.errors.confirmPassword?.message}
+                    </FormMessage>
+                  )}
                 </FormItem>
               )}
-            />
+            /> */}
           </div>
           <Button type="submit" className="bg-[#005C58] w-full">
             Acessar
