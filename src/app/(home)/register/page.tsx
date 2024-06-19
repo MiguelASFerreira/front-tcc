@@ -27,13 +27,10 @@ const registerSchema = z.object({
   email: z.string().email({
     message: "Email Inválido",
   }),
-  password: z.string(),
-  // confirmedPassword: z.string(),
+  password: z.string().min(4, {
+    message: 'Senha com no mínimo 4 caracteres!'
+  })
 });
-// .refine((data) => data.password === data.confirmedPassword, {
-//   path: ['confirmPassword'],
-//   message: "As senhas não são iguais",
-// });
 
 type RegisterSchema = z.infer<typeof registerSchema>;
 
@@ -49,11 +46,9 @@ export default function RegisterHome() {
       telefone: "",
       email: "",
       password: "",
-      // confirmedPassword: "",
     },
   });
   const handleRegister = async (data: RegisterSchema) => {
-    console.log(data);
     try {
       const telefoneLimpo = data.telefone
         ? String(data.telefone).replace(/\D/g, "")
@@ -222,30 +217,6 @@ export default function RegisterHome() {
                 </FormItem>
               )}
             />
-            {/* <FormField
-              control={form.control}
-              name="confirmedPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="font-bold text-loginColor">
-                    Confirme sua senha:
-                  </FormLabel>
-                  <FormControl className="outline-none">
-                    <Input
-                      required
-                      className="rounded-none border-0 border-b-2 border-loginColor"
-                      placeholder="Senha"
-                      {...field}
-                    />
-                  </FormControl>
-                  {form.formState.errors.confirmPassword?.message && (
-                    <FormMessage>
-                      {form.formState.errors.confirmPassword?.message}
-                    </FormMessage>
-                  )}
-                </FormItem>
-              )}
-            /> */}
           </div>
           <Button type="submit" className="bg-[#005C58] w-full">
             Acessar
