@@ -17,7 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 const registerSchema = z.object({
   dono: z.string(),
@@ -28,15 +28,15 @@ const registerSchema = z.object({
     message: "Email Inválido",
   }),
   password: z.string().min(4, {
-    message: 'Senha com no mínimo 4 caracteres!'
-  })
+    message: "Senha com no mínimo 4 caracteres!",
+  }),
 });
 
 type RegisterSchema = z.infer<typeof registerSchema>;
 
 export default function RegisterHome() {
   const { signIn } = useAuth();
-  const router = useRouter()
+  const router = useRouter();
   const form = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -61,20 +61,21 @@ export default function RegisterHome() {
         dono: data.dono,
         image_url: "string",
         telefone1: Number(telefoneLimpo),
-        cpf: data.cpf,
+        cpf: data.cpf
       });
 
       if (response.status === 201) {
-        await signIn(data.email, data.password),
-          toast.success("Cadastro realizado com sucesso", {
-            description: "Você está sendo redicionado para o Dashboard",
-          })
+        await signIn(data.email, data.password);
+        toast.success("Cadastro realizado com sucesso", {
+          description: "Você está sendo redicionado para o Dashboard",
+        });
       } else {
         toast.success("Cadastro realizado com sucesso", {
           description: "Você está sendo redicionado para o a tela de login",
-        })
-        router.push('/dashboard')
+        });
+        router.push("/");
       }
+      return response.data
     } catch (error) {
       console.log(error);
       toast.error("Erro ao realizar o cadastro", {
@@ -209,6 +210,7 @@ export default function RegisterHome() {
                   <FormControl className="outline-none">
                     <Input
                       required
+                      type="password"
                       className="rounded-none border-0 border-b-2 border-loginColor"
                       placeholder="Senha"
                       {...field}
