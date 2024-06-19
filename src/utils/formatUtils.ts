@@ -22,11 +22,11 @@ export const formatCPF = (value: string): string => {
 export const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
 
-  const hours = date.getUTCHours();
-  const minutes = date.getUTCMinutes();
-  const day = date.getUTCDate();
-  const month = date.getUTCMonth() + 1;
-  const year = date.getUTCFullYear();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
 
   const formattedHours = hours.toString().padStart(2, "0");
   const formattedMinutes = minutes.toString().padStart(2, "0");

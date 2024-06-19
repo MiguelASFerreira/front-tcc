@@ -91,7 +91,7 @@ export const DialogUpdate = ({ id_servico }: DialogUpdateProps) => {
                   <FormItem className="flex flex-col w-full">
                     <FormLabel className="font-bold text-loginColor">Qual o novo valor do serviço?</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="Email" {...field} />
+                      <Input type="number" placeholder="Novo Valor" {...field} />
                     </FormControl>
                   </FormItem>
                 )}

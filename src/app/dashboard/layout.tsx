@@ -14,15 +14,15 @@ export default function DashboardLayout({
 }>) {
   return (
     <AuthProvider>
-        <div className="grid grid-cols-10 min-h-screen">
-          <div className="col-span-2">
-            <Sidebar />
-          </div>
-          <div className="col-span-8 flex flex-col">
-            <Navbar />
-            <div className="flex-grow p-4">{children}</div>
-          </div>
+      <div className="grid grid-cols-10 min-h-screen">
+        <div className="col-span-2">
+          <Sidebar />
         </div>
+        <div className="col-span-8 flex flex-col ml-2/12">
+            <Navbar />
+          <div className="flex-grow p-4">{children}</div>
+        </div>
+      </div>
     </AuthProvider>
   );
 }

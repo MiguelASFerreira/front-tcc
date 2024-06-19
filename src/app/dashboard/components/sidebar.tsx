@@ -11,18 +11,18 @@ export const Sidebar = () => {
   const isActive = (href: any) => path === href;
 
   return (
-    <div className="bg-[#005C58] h-full p-4 text-white flex flex-col">
+    <div className="bg-[#005C58] h-full p-4 text-white flex flex-col fixed w-[20%]">
       <div className="flex items-center justify-center pt-6">
         <Link href={"/dashboard"}>
-            <Image
-              src="/logoSidebar.svg"
-              alt="Logo Dashboard"
-              quality={100}
-              width={900}
-              height={900}
-              priority
-              className="object-cover"
-            />
+          <Image
+            src="/logoSidebar.svg"
+            alt="Logo Dashboard"
+            quality={100}
+            width={900}
+            height={900}
+            priority
+            className="object-cover"
+          />
         </Link>
       </div>
 
