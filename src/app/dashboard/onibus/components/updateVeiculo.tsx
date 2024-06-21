@@ -151,7 +151,12 @@ export const UpdateVeiculo = ({
                     Digite a capacidade do veículo:
                   </FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="Ex: 10" {...field} />
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="Ex: 10"
+                      {...field}
+                    />
                   </FormControl>
                 </FormItem>
               )}

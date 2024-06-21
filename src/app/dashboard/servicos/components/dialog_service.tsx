@@ -4,20 +4,46 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Dialog, DialogTrigger, DialogHeader, DialogContent, DialogDescription, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogHeader,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { Command, CommandInput, CommandItem, CommandEmpty, CommandList, CommandGroup } from "@/components/ui/command";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandInput,
+  CommandItem,
+  CommandEmpty,
+  CommandList,
+  CommandGroup,
+} from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
 import { ChevronsUpDown, CirclePlus, Check } from "lucide-react";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { api, isAxiosError } from "@/data/api";
 
 const servicoSchema = z.object({
   servicoId: z.number(),
-  valor: z.coerce.number(),
+  valor: z.coerce.number().nonnegative(),
 });
 
 type ServicoSchema = z.infer<typeof servicoSchema>;
@@ -54,7 +80,7 @@ export const DialogService: React.FC<DialogServiceProps> = ({ token }) => {
       } catch (error) {
         console.error("Erro ao buscar opções:", error);
         toast.error("Erro ao buscar os serviços", {
-          description : 'Feche o modal e tente novamente!'
+          description: "Feche o modal e tente novamente!",
         });
       }
     };
@@ -64,6 +90,12 @@ export const DialogService: React.FC<DialogServiceProps> = ({ token }) => {
 
   const handleService = async (data: ServicoSchema): Promise<void> => {
     try {
+      if (data.valor <= 0) {
+        toast.warning("Cuidado!", {
+          description: "Não pode haver valores negativos ou zero!",
+        });
+        return;
+      }
       const response = await api.post(
         "/servico-oferta",
         {
@@ -76,20 +108,25 @@ export const DialogService: React.FC<DialogServiceProps> = ({ token }) => {
           },
         }
       );
-      form.reset();  
-      window.location.reload();  
+      form.reset();
+      window.location.reload();
 
       return response.data;
     } catch (error) {
-      form.reset()
+      form.reset();
       console.log(error);
-      if (isAxiosError<ErrorResponseData>(error) && error.response?.data?.message === 'Este serviço já está cadastrado para esta empresa') {
-        toast.error('Erro ao cadastrar o serviço', {
-          description: 'Este serviço já está cadastrado para esta empresa'
+      if (
+        isAxiosError<ErrorResponseData>(error) &&
+        error.response?.data?.message ===
+          "Este serviço já está cadastrado para esta empresa"
+      ) {
+        toast.error("Erro ao cadastrar o serviço", {
+          description: "Este serviço já está cadastrado para esta empresa",
         });
       } else {
-        toast.error('Erro ao cadastrar o serviço', {
-          description: 'Ocorreu um erro inesperado. Tente novamente mais tarde.'
+        toast.error("Erro ao cadastrar o serviço", {
+          description:
+            "Ocorreu um erro inesperado. Tente novamente mais tarde.",
         });
       }
     }
@@ -108,7 +145,10 @@ export const DialogService: React.FC<DialogServiceProps> = ({ token }) => {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleService)} className="grid grid-cols-2 gap-4">
+          <form
+            onSubmit={form.handleSubmit(handleService)}
+            className="grid grid-cols-2 gap-4"
+          >
             <div className="flex flex-col items-center gap-4 col-span-1">
               <div className="flex items-center gap-2 w-full h-full">
                 <div className="flex items-center justify-center bg-[#008B85] w-8 h-full text-center text-white font-bold rounded">
@@ -119,7 +159,9 @@ export const DialogService: React.FC<DialogServiceProps> = ({ token }) => {
                   name="servicoId"
                   render={({ field }) => (
                     <FormItem className="flex flex-col w-full">
-                      <FormLabel className="font-bold text-loginColor">Escolha um serviço: </FormLabel>
+                      <FormLabel className="font-bold text-loginColor">
+                        Escolha um serviço:{" "}
+                      </FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -132,7 +174,9 @@ export const DialogService: React.FC<DialogServiceProps> = ({ token }) => {
                               )}
                             >
                               {field.value
-                                ? options.find((option) => option.value === field.value)?.label
+                                ? options.find(
+                                    (option) => option.value === field.value
+                                  )?.label
                                 : "Selecione um serviço"}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
@@ -155,7 +199,9 @@ export const DialogService: React.FC<DialogServiceProps> = ({ token }) => {
                                     <Check
                                       className={cn(
                                         "mr-2 h-4 w-4",
-                                        option.value === field.value ? "opacity-100" : "opacity-0"
+                                        option.value === field.value
+                                          ? "opacity-100"
+                                          : "opacity-0"
                                       )}
                                     />
                                     {option.label}
@@ -187,11 +233,17 @@ export const DialogService: React.FC<DialogServiceProps> = ({ token }) => {
                       <FormControl className="outline-none">
                         <Input
                           type="number"
+                          min="1"
                           className="rounded-none border-0 border-b-2 border-loginColor"
                           placeholder="Ex: 100.00"
                           {...field}
                         />
                       </FormControl>
+                      {form.formState.errors.valor && (
+                        <FormMessage>
+                          {form.formState.errors.valor.message}
+                        </FormMessage>
+                      )}
                     </FormItem>
                   )}
                 />
@@ -206,7 +258,10 @@ export const DialogService: React.FC<DialogServiceProps> = ({ token }) => {
             </div>
             <div className="flex items-center gap-1 col-span-1">
               <DialogClose asChild>
-                <Button type="submit" className="bg-[#008B85] w-full h-full rounded text-white">
+                <Button
+                  type="submit"
+                  className="bg-[#008B85] w-full h-full rounded text-white"
+                >
                   Adicionar Serviço
                 </Button>
               </DialogClose>

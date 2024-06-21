@@ -31,7 +31,7 @@ import { useAuth } from "@/context/AuthContext";
 const onibusSchema = z.object({
   veiculo: z.string(),
   placa: z.string(),
-  capacidade: z.coerce.number(),
+  capacidade: z.coerce.number().nonnegative(),
   adaptavel: z.boolean(),
 });
 
@@ -69,12 +69,12 @@ export const AddVeiculo = () => {
           },
         }
       );
-      form.reset();  
-      window.location.reload(); 
+      form.reset();
+      window.location.reload();
 
-      toast.success('Suceeso', {
-        description: 'Veículo Cadastrado!'
-      })
+      toast.success("Suceeso", {
+        description: "Veículo Cadastrado!",
+      });
 
       return response.data;
     } catch (error) {
@@ -148,7 +148,12 @@ export const AddVeiculo = () => {
                       Digite a capacidade do veículo:
                     </FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="Ex: 10" {...field} />
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="Ex: 10"
+                        {...field}
+                      />
                     </FormControl>
                   </FormItem>
                 )}
