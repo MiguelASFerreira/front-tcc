@@ -46,7 +46,7 @@ import { MoreHorizontal, Ellipsis } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const descontoScehma = z.object({
-  desconto: z.string(),
+  desconto: z.coerce.number().nonnegative(),
 });
 
 interface DropdownClientProps {
@@ -60,7 +60,7 @@ export const DropdownClient = ({ id_client }: DropdownClientProps) => {
   const form = useForm<DescontoSchema>({
     resolver: zodResolver(descontoScehma),
     defaultValues: {
-      desconto: "",
+      desconto: 0,
     },
   });
   const [isDialogOpen, setDialogOpen] = useState(false);
@@ -178,6 +178,7 @@ export const DropdownClient = ({ id_client }: DropdownClientProps) => {
                     <FormControl>
                       <Input
                         type="number"
+                        min="1"
                         placeholder="Valor do Desconto"
                         {...field}
                       />

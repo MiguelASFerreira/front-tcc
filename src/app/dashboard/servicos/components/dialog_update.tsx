@@ -31,7 +31,7 @@ interface DialogUpdateProps {
 }
 
 const servicoSchema = z.object({
-  valor: z.coerce.number(),
+  valor: z.coerce.number().nonnegative(),
 });
 
 type ServicoSchema = z.infer<typeof servicoSchema>;
@@ -47,25 +47,25 @@ export const DialogUpdate = ({ id_servico }: DialogUpdateProps) => {
 
   const handleUpdate = async (data: ServicoSchema) => {
     try {
-        const response = await api.patch(
-          `/servico-oferta/empresa`,
-          {
-            id_servico: id_servico,
-            valor: data.valor
+      const response = await api.patch(
+        `/servico-oferta/empresa`,
+        {
+          id_servico: id_servico,
+          valor: data.valor,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        form.reset()
-        window.location.reload();
-        return toast.success("Sucesso", {
-          description: `${response.data.message}`,
-        });
+        }
+      );
+      form.reset();
+      window.location.reload();
+      return toast.success("Sucesso", {
+        description: `${response.data.message}`,
+      });
     } catch (error) {
-      form.reset()
+      form.reset();
       return toast.error("Ocorreu um erro", {
         description: `${error}`,
       });
@@ -89,9 +89,16 @@ export const DialogUpdate = ({ id_servico }: DialogUpdateProps) => {
                 name="valor"
                 render={({ field }) => (
                   <FormItem className="flex flex-col w-full">
-                    <FormLabel className="font-bold text-loginColor">Qual o novo valor do serviço?</FormLabel>
+                    <FormLabel className="font-bold text-loginColor">
+                      Qual o novo valor do serviço?
+                    </FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="Novo Valor" {...field} />
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="Novo Valor"
+                        {...field}
+                      />
                     </FormControl>
                   </FormItem>
                 )}
