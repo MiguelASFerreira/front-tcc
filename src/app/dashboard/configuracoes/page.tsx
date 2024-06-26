@@ -27,6 +27,8 @@ import { api } from "@/data/api";
 import { Spinner } from "@/components/spinner";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UploadDropzone } from "@/utils/uploadthing";
+import { imageRemove } from "@/actions/imageDelete";
 
 const updateSchema = z.object({
   nomeEmpresa: z.string().optional(),
@@ -35,12 +37,7 @@ const updateSchema = z.object({
   cpf: z.string().optional(),
 });
 
-const imageSchema = z.object({
-  image_url: z.instanceof(File).optional(),
-});
-
 type UpdateSchema = z.infer<typeof updateSchema>;
-type ImageSchema = z.infer<typeof imageSchema>;
 
 interface DataEmpresa {
   nome: string;
@@ -63,13 +60,6 @@ export default function ConfiguracoesPage() {
       dono: "",
       telefone: "",
       cpf: "",
-    },
-  });
-
-  const formImage = useForm<ImageSchema>({
-    resolver: zodResolver(imageSchema),
-    defaultValues: {
-      image_url: undefined,
     },
   });
 
@@ -104,21 +94,20 @@ export default function ConfiguracoesPage() {
     }
   };
 
-  const handleSaveImage = async (data: ImageSchema) => {
+  const handleSaveImage = async (image_url: string) => {
     try {
       const response = await api.post(
         "/empresa/upload/image",
         {
-          image: data.image_url,
+          image_url: image_url,
         },
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data"
+            "Content-Type": "application/json",
           },
         }
       );
-      formImage.reset();
       window.location.reload();
       toast.success("Sucesso!", {
         description: "Imagem salva com sucesso!",
@@ -132,6 +121,9 @@ export default function ConfiguracoesPage() {
     }
   };
 
+  const handleRemoveImage = async (imageKey: string) => {
+    await imageRemove(imageKey);
+  };
   useEffect(() => {
     const getEmpresa = async () => {
       try {
@@ -159,10 +151,7 @@ export default function ConfiguracoesPage() {
   const telefone = form.watch("telefone");
   const cpf = form.watch("cpf");
 
-  const image = formImage.watch("image_url");
-
   const isFormValid = nomeEmpresa || dono || telefone || cpf;
-  const isFormImageValid = image;
   return (
     <div>
       <h1 className="text-loginColor font-bold text-xl">Configurações</h1>
@@ -278,59 +267,56 @@ export default function ConfiguracoesPage() {
             </CardContent>
           </Card>
           <Card className="mt-5">
-          <CardHeader>
+            <CardHeader>
               <CardTitle>Configuração da Imagem de perfil</CardTitle>
               <CardDescription>
                 Aqui você pode realizar o upload de uma nova imagem de perfil
               </CardDescription>
             </CardHeader>
             <CardContent className="pb-2">
-            <Form {...formImage}>
-              <form onSubmit={formImage.handleSubmit(handleSaveImage)}>
-                <Avatar className="w-[150px] h-[150px]">
-                  <AvatarImage
-                    src={
-                      dataEmpresa?.image_url
-                        ? dataEmpresa?.image_url
-                        : "/default-image2.svg"
-                    }
-                    alt="Imagem default"
-                  />
-                  <AvatarFallback>UB</AvatarFallback>
-                </Avatar>
-                <FormField
-                  control={formImage.control}
-                  name="image_url"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              formImage.setValue("image_url", file);
-                            }
-                          }}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
+              <Avatar className="w-[150px] h-[150px] border border-[#005C58]">
+                <AvatarImage
+                  src={
+                    dataEmpresa?.image_url
+                      ? dataEmpresa?.image_url
+                      : "/default-image2.svg"
+                  }
+                  alt="Imagem default"
                 />
-                <div className="flex items-center justify-end gap-4 mt-4">
-                  <div>
-                    <Button
-                      type="submit"
-                      className="bg-[#005C58] w-[150px]"
-                      disabled={!isFormImageValid}
-                    >
-                      Salvar Imagem
-                    </Button>
-                  </div>
-                </div>
-              </form>
-            </Form>
+                <AvatarFallback>UB</AvatarFallback>
+              </Avatar>
+              <UploadDropzone
+                appearance={{
+                  label: 'text-[#005C58]',
+                  button: 'bg-[#005C58]',
+                  container: 'border-[#005C58]'
+                }}
+                content={{
+                  label: 'Arraste ou Selecione uma Imagem',
+                  allowedContent: 'Imagem (4MB)',
+                }}
+                endpoint="imageUploader"
+                onClientUploadComplete={async (res) => {
+                  const imageUrl = res[0].url;
+
+                  if (dataEmpresa?.image_url) {
+                    const oldImageId = dataEmpresa.image_url
+                      .split("https://utfs.io/f/")
+                      .pop();
+                    if (oldImageId) {
+                      await handleRemoveImage(oldImageId);
+                    }
+                  }
+
+                  handleSaveImage(imageUrl);
+                }}
+                onUploadError={(error: Error) => {
+                  console.log(error);
+                  toast.error("Erro ao fazer upload da imagem", {
+                    description: "Tente Novamente!",
+                  });
+                }}
+              />
             </CardContent>
           </Card>
         </>
