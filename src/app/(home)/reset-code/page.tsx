@@ -21,6 +21,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { REGEXP_ONLY_DIGITS } from "input-otp"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/data/api";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,7 +37,7 @@ const emailSchema = z.object({
 });
 
 const resetCodeSchema = z.object({
-  code: z.coerce.number().min(6, {
+  code: z.string().min(6, {
     message: "A senha tem no mínimo 6 dígitos!",
   }),
   newSenha: z.string(),
@@ -62,7 +63,7 @@ export default function ResetCodePage() {
   const formResetCode = useForm<ResetCodeSchema>({
     resolver: zodResolver(resetCodeSchema),
     defaultValues: {
-      code: undefined,
+      code: "",
       newSenha: "",
     },
   });
@@ -87,7 +88,7 @@ export default function ResetCodePage() {
 
   const handleResetCode = async (data: ResetCodeSchema) => {
     try {
-        await api.post(`/empresa/reset-password/${data.code}`, {
+        await api.post(`/empresa/reset-password/${Number(data.code)}`, {
         novaSenha: data.newSenha,
       });
       toast.success("Senha Atualizada com sucesso!");
@@ -156,7 +157,7 @@ export default function ResetCodePage() {
                       <FormItem>
                         <FormLabel>Código</FormLabel>
                         <FormControl>
-                          <InputOTP maxLength={6} {...field}>
+                          <InputOTP maxLength={6} pattern={REGEXP_ONLY_DIGITS} {...field}>
                             <InputOTPGroup>
                               <InputOTPSlot index={0} />
                               <InputOTPSlot index={1} />
