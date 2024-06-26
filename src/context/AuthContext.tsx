@@ -67,6 +67,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return true
     } catch (error) {
       console.error('Erro no login:', error);
+      toast.error("Ocorreu um erro", {
+        description: "Tente Novamente!"
+      })
       return false
     }
   };

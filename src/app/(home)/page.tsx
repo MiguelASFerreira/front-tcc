@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 const loginSchema = z.object({
   email: z.string().email({
@@ -115,6 +116,12 @@ export default function LoginHome() {
         className="font-semibold text-[12px] text-loginColor hover:underline"
       >
         Primeiro Acesso? Cadastrar-se
+      </Link>
+      <Link
+        href={"/reset-code"}
+        className="font-semibold text-[12px] text-loginColor hover:underline mt-1"
+      >
+        Esqueci a senha
       </Link>
     </div>
   );

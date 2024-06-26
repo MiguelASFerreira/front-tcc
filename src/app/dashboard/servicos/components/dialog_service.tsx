@@ -113,15 +113,21 @@ export const DialogService: React.FC<DialogServiceProps> = ({ token }) => {
 
       return response.data;
     } catch (error) {
-      form.reset();
-      console.log(error);
       if (
         isAxiosError<ErrorResponseData>(error) &&
         error.response?.data?.message ===
           "Este serviço já está cadastrado para esta empresa"
       ) {
-        toast.error("Erro ao cadastrar o serviço", {
+        toast.warning("Erro ao cadastrar o serviço", {
           description: "Este serviço já está cadastrado para esta empresa",
+        });
+      } else if (
+        isAxiosError<ErrorResponseData>(error) &&
+        error.response?.data?.message ===
+          "Veículo necessário para o cadastro"
+      ) {
+        toast.warning("Erro ao cadastrar o serviço", {
+          description: "Para o cadstro do serviço necessita, de um veículo cadastrado!",
         });
       } else {
         toast.error("Erro ao cadastrar o serviço", {
