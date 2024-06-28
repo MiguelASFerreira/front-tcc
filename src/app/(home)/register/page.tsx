@@ -7,12 +7,12 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  // FormMessage,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/data/api";
-import { formatCPF, formatPhoneNumber } from "@/utils/formatUtils";
+import { formatCPForCNPJ, formatPhoneNumber } from "@/utils/formatUtils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -20,16 +20,21 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 
 const registerSchema = z.object({
-  dono: z.string(),
-  cpf: z.string(),
-  nomeEmpresa: z.string(),
-  telefone: z.string(),
-  email: z.string().email({
-    message: "Email Inválido",
-  }),
-  password: z.string().min(4, {
-    message: "Senha com no mínimo 4 caracteres!",
-  }),
+  dono: z.string().min(1, { message: "Seu nome é obrigatório" }),
+  cpfCnpj: z
+    .string()
+    .min(1, { message: "CPF/CNPJ é obrigatório" })
+    .regex(
+      /^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$|^\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}$/,
+      { message: "CPF/CNPJ inválido" }
+    ),
+  nomeEmpresa: z.string().min(1, { message: "Nome da empresa é obrigatório" }),
+  telefone: z
+    .string()
+    .min(1, { message: "Telefone é obrigatório" })
+    .regex(/^\(\d{2}\)\s\d{4,5}-\d{4}$/, { message: "Telefone inválido" }),
+  email: z.string().email({ message: "Email inválido" }),
+  password: z.string().min(4, { message: "Senha com no mínimo 4 caracteres" }),
 });
 
 type RegisterSchema = z.infer<typeof registerSchema>;
@@ -41,7 +46,7 @@ export default function RegisterHome() {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       dono: "",
-      cpf: "",
+      cpfCnpj: "",
       nomeEmpresa: "",
       telefone: "",
       email: "",
@@ -61,7 +66,7 @@ export default function RegisterHome() {
         dono: data.dono,
         image_url: "string",
         telefone1: Number(telefoneLimpo),
-        cpf: data.cpf
+        cpf: data.cpfCnpj,
       });
 
       if (response.status === 201) {
@@ -75,14 +80,28 @@ export default function RegisterHome() {
         });
         router.push("/");
       }
-      return response.data
-    } catch (error) {
-      console.log(error);
+      return response.data;
+    } catch (error: any) {
+      console.log(error)
+      if (error.response && error.response.status === 500) {
+        const errorMessage = error.response.data.message;
+        form.setError('email', { message: errorMessage });
+    } else {
       toast.error("Erro ao realizar o cadastro", {
-        description: "Ocorreu um erro ao realizar o cadastro",
+        description: "Ocorreu um erro ao realizar o cadastro. Tente Novamente!",
       });
     }
+    }
   };
+
+  const dono = form.watch("dono")
+  const cpfCnpj = form.watch("cpfCnpj")
+  const empresa = form.watch("nomeEmpresa")
+  const tel = form.watch("telefone")
+  const email = form.watch("email")
+  const password = form.watch("password")
+
+  const isValid = dono && cpfCnpj && empresa && tel && email && password
 
   return (
     <div className="flex flex-col">
@@ -104,29 +123,28 @@ export default function RegisterHome() {
                   </FormLabel>
                   <FormControl className="outline-none">
                     <Input
-                      required
                       placeholder="Nome"
                       {...field}
                       className="rounded-none border-0 border-b-2 border-loginColor"
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
             <FormField
               control={form.control}
-              name="cpf"
+              name="cpfCnpj"
               render={({ field: { onChange, ...props } }) => (
                 <FormItem>
                   <FormLabel className="font-bold text-loginColor">
-                    Digite seu cpf:
+                    Digite seu CPF ou CNPJ:
                   </FormLabel>
                   <FormControl className="outline-none">
                     <Input
-                      required
                       onChange={(e) => {
                         const { value } = e.target;
-                        e.target.value = formatCPF(value);
+                        e.target.value = formatCPForCNPJ(value);
                         onChange(e);
                       }}
                       className="rounded-none border-0 border-b-2 border-loginColor"
@@ -134,6 +152,7 @@ export default function RegisterHome() {
                       {...props}
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -147,12 +166,12 @@ export default function RegisterHome() {
                   </FormLabel>
                   <FormControl className="outline-none">
                     <Input
-                      required
                       className="rounded-none border-0 border-b-2 border-loginColor"
                       placeholder="Empresa"
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -166,7 +185,6 @@ export default function RegisterHome() {
                   </FormLabel>
                   <FormControl className="outline-none">
                     <Input
-                      required
                       onChange={(e) => {
                         const { value } = e.target;
                         e.target.value = formatPhoneNumber(value);
@@ -177,6 +195,7 @@ export default function RegisterHome() {
                       {...props}
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -190,12 +209,12 @@ export default function RegisterHome() {
                   </FormLabel>
                   <FormControl className="outline-none">
                     <Input
-                      required
                       className="rounded-none border-0 border-b-2 border-loginColor"
                       placeholder="Email"
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -209,18 +228,18 @@ export default function RegisterHome() {
                   </FormLabel>
                   <FormControl className="outline-none">
                     <Input
-                      required
                       type="password"
                       className="rounded-none border-0 border-b-2 border-loginColor"
                       placeholder="Senha"
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
           </div>
-          <Button type="submit" className="bg-[#005C58] w-full">
+          <Button disabled={!isValid} type="submit" className="bg-[#005C58] w-full">
             Acessar
           </Button>
         </form>

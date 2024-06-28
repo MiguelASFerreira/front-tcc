@@ -9,14 +9,25 @@ export const formatPhoneNumber = (value: any): string => {
 };
 
 
-export const formatCPF = (value: string): string => {
+export const formatCPForCNPJ = (value: string): string => {
   const cleanedValue = value.replace(/\D/g, "");
 
-  return cleanedValue
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d{1,2})/, "$1-$2")
-    .replace(/(-\d{2})\d+?$/, "$1");
+  if (cleanedValue.length <= 11) {
+    // CPF Formatting
+    return cleanedValue
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d{1,2})/, "$1-$2")
+      .replace(/(-\d{2})\d+?$/, "$1");
+  } else {
+    // CNPJ Formatting
+    return cleanedValue
+      .replace(/(\d{2})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1/$2")
+      .replace(/(\d{4})(\d{1,2})/, "$1-$2")
+      .replace(/(-\d{2})\d+?$/, "$1");
+  }
 };
 
 export const formatDate = (dateString: string): string => {
